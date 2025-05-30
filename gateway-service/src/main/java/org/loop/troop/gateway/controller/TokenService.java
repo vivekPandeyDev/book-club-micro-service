@@ -21,35 +21,35 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TokenService {
 
+	@Value("${jwt.auth.converter.resource-id}")
+	private String clientId;
 
-    @Value("${jwt.auth.converter.resource-id}")
-    private String clientId;
+	private final RestClient.Builder restBuilder;
 
-    private final RestClient.Builder restBuilder;
+	public Token getToken(String username, String password) {
+		MultiValueMap<String, String> headerMap = new LinkedMultiValueMap<>();
+		headerMap.add("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
-    public Token getToken(String username,String password){
-        MultiValueMap<String,String> headerMap = new LinkedMultiValueMap<>();
-        headerMap.add("Content-Type",MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+		String requestBody = String.format("grant_type=password&username=%s&password=%s&client_id=%s", username,
+				password, clientId);
 
-        String requestBody = String.format("grant_type=password&username=%s&password=%s&client_id=%s",
-                username, password, clientId);
+		var response = restBuilder.build()
+			.post()
+			.uri("/protocol/openid-connect/token")
+			.headers(httpHeaders -> httpHeaders.addAll(headerMap))
+			.body(requestBody)
+			.retrieve()
+			.onStatus(HttpStatusCode::isError, this::handleError)
+			.toEntity(Token.class);
 
+		return response.getBody();
+	}
 
-        var response = restBuilder.build().post()
-                .uri("/protocol/openid-connect/token")
-                .headers( httpHeaders -> httpHeaders.addAll(headerMap))
-                .body(requestBody)
-                .retrieve()
-                .onStatus(HttpStatusCode::isError,this::handleError)
-                .toEntity(Token.class);
-
-       return response.getBody();
-    }
-
-    private void handleError(HttpRequest req, ClientHttpResponse resp) throws IOException {
-        String result = new BufferedReader(new InputStreamReader(resp.getBody()))
-                .lines().parallel().collect(Collectors.joining("\n"));
-        throw new RestClientException(result);
-    }
+	private void handleError(HttpRequest req, ClientHttpResponse resp) throws IOException {
+		String result = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
+			.parallel()
+			.collect(Collectors.joining("\n"));
+		throw new RestClientException(result);
+	}
 
 }

@@ -5,5 +5,6 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
-public record ApiError<T>(boolean success, @JsonProperty("error_code") HttpStatus errorCode, Map<String, T> data, String message) {
+public record ApiError<T>(boolean success, @JsonProperty("error_code") HttpStatus errorCode, Map<String, T> data,
+		String message) {
 }

@@ -81,15 +81,16 @@
                         <image>eclipse-temurin:21-jre</image>
                     </from>
                     <to>
-                        <image>${dockerImageName}</image>
+                        <image>docker.io/${dockerUserName}/${project.artifactId}</image>
                         <tags>
                             <tag>${project.version}</tag>
                         </tags>
                     </to>
                     <container>
                         <ports>
-                            <port>4001</port>
+                            <port>8761</port>
                         </ports>
+                        <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                     </container>
                 </configuration>
             </plugin>

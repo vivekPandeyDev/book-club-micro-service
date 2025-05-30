@@ -14,52 +14,45 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final TokenService tokenService;
+	private final TokenService tokenService;
 
-    private final JwtAuthConverter jwtAuthConverter;
+	private final JwtAuthConverter jwtAuthConverter;
 
-    @PostMapping("/token")
-    public Token getToken(@Valid @RequestBody LoginRequest loginRequest) {
-        return tokenService.getToken(loginRequest.getUsername(), loginRequest.getPassword());
-    }
+	@PostMapping("/token")
+	public Token getToken(@Valid @RequestBody LoginRequest loginRequest) {
+		return tokenService.getToken(loginRequest.getUsername(), loginRequest.getPassword());
+	}
 
-    @GetMapping("/token/info")
-    public Mono<ResponseEntity<Map<String, String>>> getTokenInfo(@AuthenticationPrincipal Jwt jwt) {
-        var authenticationTokenMono = jwtAuthConverter.convert(jwt);
-        assert authenticationTokenMono != null;
-        return authenticationTokenMono
-                .switchIfEmpty(Mono.error(new ServiceException("Invalid token, cannot get the user name")))
-                .flatMap(z ->
-                        Mono.just(
-                                ResponseEntity.ok(
-                                        Map.of("user_name", z.getName()
-                                        )
-                                )
-                        )
-                );
-    }
+	@GetMapping("/token/info")
+	public Mono<ResponseEntity<Map<String, String>>> getTokenInfo(@AuthenticationPrincipal Jwt jwt) {
+		var authenticationTokenMono = jwtAuthConverter.convert(jwt);
+		assert authenticationTokenMono != null;
+		return authenticationTokenMono
+			.switchIfEmpty(Mono.error(new ServiceException("Invalid token, cannot get the user name")))
+			.flatMap(z -> Mono.just(ResponseEntity.ok(Map.of("user_name", z.getName()))));
+	}
 
-    @GetMapping
-    public String guest() {
-        return "Hello from Spring boot & Keycloak - Guest";
-    }
+	@GetMapping
+	public String guest() {
+		return "Hello from Spring boot & Keycloak - Guest";
+	}
 
-    @GetMapping("/read")
-    @PreAuthorize("hasAuthority('ROLE_READ')")
-    public Mono<String> hello() {
+	@GetMapping("/read")
+	@PreAuthorize("hasAuthority('ROLE_READ')")
+	public Mono<String> hello() {
 
-        return Mono.just("Hello from Spring boot & Keycloak - User");
-    }
+		return Mono.just("Hello from Spring boot & Keycloak - User");
+	}
 
-    @GetMapping("/write")
-    @PreAuthorize("hasRole('WRITE')")
-    public Mono<String> hello2() {
-        return Mono.just("Hello from Spring boot & Keycloak - ADMIN");
-    }
+	@GetMapping("/write")
+	@PreAuthorize("hasRole('WRITE')")
+	public Mono<String> hello2() {
+		return Mono.just("Hello from Spring boot & Keycloak - ADMIN");
+	}
+
 }

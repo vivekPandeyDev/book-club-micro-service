@@ -18,50 +18,44 @@ import java.util.stream.Collectors;
 @Component
 public class JwtAuthConverter implements Converter<Jwt, Mono<AbstractAuthenticationToken>> {
 
-    @Value("${jwt.auth.converter.principle-attribute}")
-    private String principleAttribute;
+	@Value("${jwt.auth.converter.principle-attribute}")
+	private String principleAttribute;
 
-    @Value("${jwt.auth.converter.resource-id}")
-    private String resourceId;
+	@Value("${jwt.auth.converter.resource-id}")
+	private String resourceId;
 
+	private final List<String> filterRole = List.of("default-roles-auth-server", "offline_access", "uma_authorization");
 
-    private final List<String> filterRole = List.of("default-roles-auth-server","offline_access","uma_authorization");
+	@Override
+	public Mono<AbstractAuthenticationToken> convert(@NonNull Jwt jwt) {
+		Collection<GrantedAuthority> authorities = extractResourceRoles(jwt, resourceId);
 
-    @Override
-    public Mono<AbstractAuthenticationToken> convert(@NonNull Jwt jwt) {
-        Collection<GrantedAuthority> authorities = extractResourceRoles(jwt, resourceId);
+		return Mono.just(new JwtAuthenticationToken(jwt, authorities, getPrincipleClaimName(jwt)));
+	}
 
-        return Mono.just(new JwtAuthenticationToken(
-                jwt,
-                authorities,
-                getPrincipleClaimName(jwt)
-        ));
-    }
+	private String getPrincipleClaimName(Jwt jwt) {
+		String claimName = JwtClaimNames.SUB;
+		if (principleAttribute != null) {
+			claimName = principleAttribute;
+		}
+		return jwt.getClaim(claimName);
+	}
 
-    private String getPrincipleClaimName(Jwt jwt) {
-        String claimName = JwtClaimNames.SUB;
-        if (principleAttribute != null) {
-            claimName = principleAttribute;
-        }
-        return jwt.getClaim(claimName);
-    }
+	private Collection<GrantedAuthority> extractResourceRoles(Jwt jwt, String resourceId) {
+		Map<String, Collection<String>> realmAccess = jwt.getClaim("realm_access");
+		if (realmAccess == null) {
+			return Collections.emptySet();
+		}
+		Collection<String> resourceRoles = realmAccess.get("roles");
 
-    private Collection<GrantedAuthority> extractResourceRoles(Jwt jwt, String resourceId) {
-        Map<String,Collection<String>> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess == null) {
-            return Collections.emptySet();
-        }
-        Collection<String> resourceRoles = realmAccess.get("roles");
+		if (resourceRoles == null) {
+			return Collections.emptySet();
+		}
 
-        if (resourceRoles == null) {
-            return Collections.emptySet();
-        }
-
-        return resourceRoles
-                .stream()
-                .filter(role -> !filterRole.contains(role.toLowerCase()))
-                .map(role -> new SimpleGrantedAuthority("ROLE_"+role.toUpperCase(Locale.ENGLISH)))
-                .collect(Collectors.toSet());
-    }
+		return resourceRoles.stream()
+			.filter(role -> !filterRole.contains(role.toLowerCase()))
+			.map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase(Locale.ENGLISH)))
+			.collect(Collectors.toSet());
+	}
 
 }

@@ -24,54 +24,56 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class GlobalExceptionAdvice {
 
-    private static final String MESSAGE = "message";
+	private static final String MESSAGE = "message";
 
-    @ExceptionHandler(WebExchangeBindException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Mono<ApiError<String>> handleValidationExceptions(WebExchangeBindException ex) {
-        final var errors = new HashMap<String, String>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return Mono.just(new ApiError<>(false, HttpStatus.BAD_REQUEST, errors, "Validation error, invalid field value passed"));
-    }
+	@ExceptionHandler(WebExchangeBindException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public Mono<ApiError<String>> handleValidationExceptions(WebExchangeBindException ex) {
+		final var errors = new HashMap<String, String>();
+		ex.getBindingResult().getAllErrors().forEach(error -> {
+			String fieldName = ((FieldError) error).getField();
+			String errorMessage = error.getDefaultMessage();
+			errors.put(fieldName, errorMessage);
+		});
+		return Mono.just(
+				new ApiError<>(false, HttpStatus.BAD_REQUEST, errors, "Validation error, invalid field value passed"));
+	}
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Mono<ApiError<String>> handleConstraintViolationExceptions(ConstraintViolationException ex) {
-        final var errors = new HashMap<String, String>();
-        ex.getConstraintViolations().forEach(violation -> {
-            String fieldName = violation.getPropertyPath().toString();
-            String errorMessage = violation.getMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return Mono.just(new ApiError<>(false, HttpStatus.BAD_REQUEST, errors, "Validation error, invalid field value passed"));
-    }
+	@ExceptionHandler(ConstraintViolationException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public Mono<ApiError<String>> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+		final var errors = new HashMap<String, String>();
+		ex.getConstraintViolations().forEach(violation -> {
+			String fieldName = violation.getPropertyPath().toString();
+			String errorMessage = violation.getMessage();
+			errors.put(fieldName, errorMessage);
+		});
+		return Mono.just(
+				new ApiError<>(false, HttpStatus.BAD_REQUEST, errors, "Validation error, invalid field value passed"));
+	}
 
-    @ExceptionHandler(ServiceException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Mono<ProblemDetail> handleServiceException(ServiceException ex, ServerWebExchange exchange) {
-        ProblemDetail problemDetail = ProblemDetail.forStatus(ex.getStatus());
-        problemDetail.setTitle(ex.getTitle());
-        problemDetail.setType(
-                UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replacePath("/error").build().toUri());
-        problemDetail.setProperties(Map.of(MESSAGE, ex.getMessage()));
-        logMessage(ex.getMessage());
-        return Mono.just(problemDetail);
-    }
+	@ExceptionHandler(ServiceException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public Mono<ProblemDetail> handleServiceException(ServiceException ex, ServerWebExchange exchange) {
+		ProblemDetail problemDetail = ProblemDetail.forStatus(ex.getStatus());
+		problemDetail.setTitle(ex.getTitle());
+		problemDetail.setType(
+				UriComponentsBuilder.fromUri(exchange.getRequest().getURI()).replacePath("/error").build().toUri());
+		problemDetail.setProperties(Map.of(MESSAGE, ex.getMessage()));
+		logMessage(ex.getMessage());
+		return Mono.just(problemDetail);
+	}
 
-    @ExceptionHandler(RestClientException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Mono<ResponseEntity<String>> handleServiceException(RestClientException ex, ServerWebExchange exchange) {
-        return Mono.just(ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(ex.getMessage()));
-    }
+	@ExceptionHandler(RestClientException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public Mono<ResponseEntity<String>> handleServiceException(RestClientException ex, ServerWebExchange exchange) {
+		return Mono.just(ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(ex.getMessage()));
+	}
 
+	private void logMessage(String message) {
+		log.info("**************************** Exception Handled Start ****************************");
+		log.error("Error message: {}", message);
+		log.info("**************************** Exception Handled End ****************************");
+	}
 
-    private void logMessage(String message) {
-        log.info("**************************** Exception Handled Start ****************************");
-        log.error("Error message: {}", message);
-        log.info("**************************** Exception Handled End ****************************");
-    }
 }

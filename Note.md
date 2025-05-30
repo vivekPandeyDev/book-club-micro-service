@@ -156,3 +156,14 @@ git log --merges --oneline main
  git push origin --delete feature/book-service
 
 ```
+
+# Create a build package make sure java version 21 installed
+```shell
+mvnw clean spring-javaformat:apply spring-boot:build-image
+mvnw -X compile spring-javaformat:apply jib:dockerBuild
+```
+
+# Push image to docker hub
+```shell
+mvnw clean compile spring-javaformat:apply jib:build 
+```

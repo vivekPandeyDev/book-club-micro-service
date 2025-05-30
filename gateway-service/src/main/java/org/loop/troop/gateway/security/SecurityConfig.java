@@ -14,36 +14,18 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthConverter jwtAuthConverter;
+	private final JwtAuthConverter jwtAuthConverter;
 
-    private static final String[] PUBLIC_URLS = {
-            "/api/users/register",
-            "/api/v1/public/**",
-            "/actuator/**",
-            "/home",
-            "/eureka/**",
-            "/swagger-ui/**",
-            "/swagger-doc/**",
-            "/swagger-ui.html"
-    };
+	private static final String[] PUBLIC_URLS = { "/api/users/register", "/api/v1/public/**", "/actuator/**", "/home",
+			"/eureka/**", "/swagger-ui/**", "/swagger-doc/**", "/swagger-ui.html" };
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(exchanges ->
-                        exchanges
-                                .pathMatchers(PUBLIC_URLS).permitAll()
-                                .anyExchange().permitAll()
-                )
-                .exceptionHandling(handlingSpec ->
-                        handlingSpec
-                                .accessDeniedHandler(new CustomAccessDeniedHandler())
-                )
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter))
-                )
-                .build();
-    }
+	@Bean
+	public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+		return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+			.authorizeExchange(exchanges -> exchanges.pathMatchers(PUBLIC_URLS).permitAll().anyExchange().permitAll())
+			.exceptionHandling(handlingSpec -> handlingSpec.accessDeniedHandler(new CustomAccessDeniedHandler()))
+			.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter)))
+			.build();
+	}
 
 }

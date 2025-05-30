@@ -13,15 +13,15 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class CustomAuthenticationEntryPoint implements ServerAuthenticationEntryPoint {
 
-    @Override
-    public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException e) {
-        log.error("*********************** authentication exception *********************");
-        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        String response = "{\"error\":\"Unauthorized\",\"message\":\"You are not authorized to access this resource\"}";
+	@Override
+	public Mono<Void> commence(ServerWebExchange exchange, AuthenticationException e) {
+		log.error("*********************** authentication exception *********************");
+		exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+		exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+		String response = "{\"error\":\"Unauthorized\",\"message\":\"You are not authorized to access this resource\"}";
 
-        return exchange.getResponse().writeWith(
-                Mono.just(exchange.getResponse().bufferFactory().wrap(response.getBytes()))
-        );
-    }
+		return exchange.getResponse()
+			.writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(response.getBytes())));
+	}
+
 }

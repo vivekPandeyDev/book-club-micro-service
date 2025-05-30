@@ -1,0 +1,21 @@
+spring:
+  config:
+    import: "configserver:http://config-service:8083"
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:9090/realms/auth-server
+          jwk-set-uri: ${spring.security.oauth.resourceserver.issuer-uri}/protocol/openid-connect/certs
+
+jwt:
+  open-id-url: ${spring.security.oauth.resourceserver.issuer-uri}/.well-known/openid-configuration
+  auth:
+    converter:
+      principle-attribute: preferred_username
+
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: ${JWT_RESOURCE_ID}
+      client-secret: ${JWT_RESOURCE_SECRET}

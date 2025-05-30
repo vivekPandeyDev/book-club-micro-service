@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/public")
 public class PublicController {
-    @GetMapping
-    public String guest() {
-        return "Hello from Spring boot & Keycloak - Guest";
-    }
+
+	@GetMapping
+	public String guest() {
+		return "Hello from Spring boot & Keycloak - Guest";
+	}
+
 }

@@ -11,20 +11,20 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class WebConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String tokenApiBaseUrl;
+	@Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+	private String tokenApiBaseUrl;
 
-    @Bean
-    RestClient.Builder restClient(ObjectMapper objectMapper){
-        return RestClient
-                .builder()
-                .baseUrl(tokenApiBaseUrl)
-                .messageConverters( c -> c.add(0,customConverters(objectMapper)));
-    }
+	@Bean
+	RestClient.Builder restClient(ObjectMapper objectMapper) {
+		return RestClient.builder()
+			.baseUrl(tokenApiBaseUrl)
+			.messageConverters(c -> c.add(0, customConverters(objectMapper)));
+	}
 
-    private HttpMessageConverter<?> customConverters(ObjectMapper objectMapper) {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper);
-        return converter;
-    }
+	private HttpMessageConverter<?> customConverters(ObjectMapper objectMapper) {
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		converter.setObjectMapper(objectMapper);
+		return converter;
+	}
+
 }

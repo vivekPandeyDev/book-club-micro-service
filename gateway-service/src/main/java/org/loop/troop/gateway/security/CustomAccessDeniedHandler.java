@@ -13,15 +13,15 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class CustomAccessDeniedHandler implements ServerAccessDeniedHandler {
 
-    @Override
-    public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException denied) {
-        log.error("*********************** ACCESS DENIED *********************");
-        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        String response = "{\"error\":\"Access Denied\",\"message\":\"You do not have permission to access this resource\"}";
+	@Override
+	public Mono<Void> handle(ServerWebExchange exchange, AccessDeniedException denied) {
+		log.error("*********************** ACCESS DENIED *********************");
+		exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+		exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+		String response = "{\"error\":\"Access Denied\",\"message\":\"You do not have permission to access this resource\"}";
 
-        return exchange.getResponse().writeWith(
-                Mono.just(exchange.getResponse().bufferFactory().wrap(response.getBytes()))
-        );
-    }
+		return exchange.getResponse()
+			.writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(response.getBytes())));
+	}
+
 }
