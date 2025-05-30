@@ -55,7 +55,7 @@ kubectl apply -R -f .
 ```shell
 kubectl get svc -n ingress-nginx
 kubectl get ingress -n book-app
-kubectdescribe ingress book-service-ingress -n book-appl 
+kubectl describe ingress book-service-ingress -n book-app
 kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx
 kubectl run -it --rm curl-test -n book-app --image=curlimages/curl -- sh
 curl http://book-service:4001/actuator/env

@@ -1,0 +1,52 @@
+apiVersion: skaffold/v4beta13
+kind: Config
+metadata:
+  name: book-club
+build:
+  artifacts:
+    - image: alexmercer1234556789/book-service
+      context: book-service
+      custom:
+        buildCommand: "bash ../scripts/build-book-service.sh alexmercer1234556789/book-service"
+        dependencies:
+          paths:
+            - pom.xml
+            - src/**
+    - image: alexmercer1234556789/club-service
+      context: club-service
+      custom:
+        buildCommand: "bash ../scripts/build-club-service.sh alexmercer1234556789/club-service"
+        dependencies:
+          paths:
+            - pom.xml
+            - src/**
+    - image: alexmercer1234556789/event-service
+      context: event-service
+      custom:
+        buildCommand: "bash ../scripts/build-event-service.sh alexmercer1234556789/event-service"
+        dependencies:
+          paths:
+            - pom.xml
+            - src/**
+manifests:
+  rawYaml:
+    - k8s/namespace-book-app.yaml
+    - k8s/ngnix-load-balancer.yaml
+    - k8s/book-service/deployment-book-service.yaml
+    - k8s/book-service/service-book-service.yml
+    - k8s/club-service/club-service-deployment.yaml
+    - k8s/club-service/club-service-service.yaml
+    - k8s/event-service/event-service-deployment.yaml
+    - k8s/event-service/event-service-service.yaml
+    - k8s/infra/book-db/deployment-book-service-db.yaml
+    - k8s/infra/book-db/persistentvolumeclaim-book-postgres.yaml
+    - k8s/infra/book-db/service-book-service-db.yaml
+    - k8s/infra/club-db/deployment-club-service-db.yaml
+    - k8s/infra/club-db/persistentvolumeclaim-club-postgres.yaml
+    - k8s/infra/club-db/service-club-service-db.yaml
+    - k8s/infra/rabbitmq/deployment-rabbitmq.yaml
+    - k8s/infra/rabbitmq/persistentvolumeclaim-rabbitmq.yaml
+    - k8s/infra/rabbitmq/service-rabbitmq.yaml
+    - k8s/infra/redis/deployment-redis.yaml
+    - k8s/infra/redis/persistentvolumeclaim-redis.yaml
+    - k8s/infra/redis/service-redis.yaml
