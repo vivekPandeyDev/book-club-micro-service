@@ -1,0 +1,53 @@
+jwt:
+    open-id-name: keycloak
+    open-id-url: http://${OPEN_ID_HOST}:9090/realms/auth-server/.well-known/openid-configuration
+    auth:
+        converter:
+            resource-id: ${JWT_RESOURCE_ID}
+            principle-attribute: preferred_username
+
+server:
+    port: 8080
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    oauth:
+      client-id: ${JWT_RESOURCE_ID}
+      client-secret: ${JWT_RESOURCE_SECRET}
+    urls:
+      - url: /v3/api-docs
+        name: API Gateway Service
+      - url: /user-service/v3/api-docs
+        name: User Service
+
+spring:
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: ${JWT_ISSUER_URI}
+                    jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+    application:
+        name: gateway-service
+    #    update config at last
+    config:
+      import: configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8083}
+    cloud:
+        gateway:
+            routes:
+                - id: USER-SERVICE
+                  uri: lb://USER-SERVICE
+                  predicates:
+                      - Path=/api/users/**
+                - id: USER-SERVICE-SWAGGER
+                  uri: lb://USER-SERVICE
+                  predicates:
+                      - Path=/user-service/v3/api-docs
+                  filters:
+                      - SetPath=/v3/api-docs
+
