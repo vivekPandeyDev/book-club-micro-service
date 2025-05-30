@@ -165,5 +165,6 @@ mvnw -X compile spring-javaformat:apply jib:dockerBuild
 
 # Push image to docker hub
 ```shell
-mvnw clean compile spring-javaformat:apply jib:build 
+mvnw clean install spring-javaformat:apply jib:build 
+docker-compose -f docker-compose-app-remote.yml up --force-recreate --pull always
 ```
