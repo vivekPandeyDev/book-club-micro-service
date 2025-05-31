@@ -151,21 +151,21 @@ services:
       - app-net
 
   permit-pdp:
-    image: permitio/pdp:latest
+    image: permitio/pdp-v2:latest
     container_name: permit-pdp
-    restart: always
     ports:
-      - "7766:7766"
+      - "7766:7000"
     environment:
-      PERMIT_API_KEY: <your_permit_api_key>
-      PDP_LOG_LEVEL: info
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:7766/healthz" ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+      - PDP_API_KEY=${PDP_API_KEY}
+      - PDP_DEBUG=True
     networks:
       - app-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
   kafka:
     image: wurstmeister/kafka:latest
