@@ -84,6 +84,25 @@ services:
     networks:
       - app-net
 
+  user-service-db:
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=user-db
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./docker/event-postgres:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.50'
+    networks:
+      - app-net
+
+
   keycloak-db:
     image: postgres
     restart: always
@@ -108,7 +127,7 @@ services:
     ports:
       - "9090:8080"
     environment:
-      KEYCLOAK_LOGLEVEL: TRACE
+      JAVA_OPTS_APPEND: "-Dkeycloak.profile=preview -Dquarkus.log.level=DEBUG"
       JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -128,6 +147,52 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - app-net
+
+  permit-pdp:
+    image: permitio/pdp:latest
+    container_name: permit-pdp
+    restart: always
+    ports:
+      - "7766:7766"
+    environment:
+      PERMIT_API_KEY: <your_permit_api_key>
+      PDP_LOG_LEVEL: info
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7766/healthz" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-net
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    restart: always
+    ports:
+      - "9092:9092"  # External port for your local application
+      - "9093:9093"  # Internal port for communication between Docker containers
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,OUTSIDE://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - ./docker/event/kafka:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+    networks:
+      - app-net
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    volumes:
+      - ./docker/event/zookeeper:/var/lib/zookeeper/data
     networks:
       - app-net
 

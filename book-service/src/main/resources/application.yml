@@ -92,6 +92,10 @@ spring:
           multiplier: 5.0             # for exponential backoff
           max-interval: 5000          # maximum wait between retries
         default-requeue-rejected: false
+  config:
+    import: configserver:${SPRING_CLOUD_CONFIG_URI:http://localhost:8083}
+server:
+  port: 4000
 app:
   rabbitmq:
     book-exchange: book-service.exchange
